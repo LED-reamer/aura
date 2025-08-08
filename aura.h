@@ -1,10 +1,8 @@
 #pragma once
 #include "utils/types.h"
 
-typedef struct{
-	void* sdl3_window;
-	void* sdl3_renderer;
-}aura_context_t;
+#define AURA_CORNER_VERTICES (16)
+#define AURA_MAX_TEXTURES_PER_FRAME (64)
 
 typedef struct{
 	vec2_t position;
@@ -17,6 +15,13 @@ typedef struct{
 	void* sdl3_texture;//RGBA8888
 }aura_texture_t;
 typedef aura_texture_t aura_target_t;
+
+typedef struct{
+	void* sdl3_window;
+	void* sdl3_renderer;
+	aura_texture_t textures[AURA_MAX_TEXTURES_PER_FRAME];
+	uint32_t num_textures;
+}aura_context_t;
 
 typedef enum{
 	AURA_NEAREST,

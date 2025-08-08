@@ -4,17 +4,11 @@
 
 #include <stdarg.h> //va list
 
-#define AURA_CORNER_VERTICES (16)
-
-#define AURA_MAX_TEXTURES_PER_FRAME (64)
-aura_texture_t aura_textures[AURA_MAX_TEXTURES_PER_FRAME];
-uint32_t num_aura_textures = 0;
-
-void __destroy_textures() {
-	for (uint32_t i = 0; i < num_aura_textures; i++) {
-		SDL_DestroyTexture((SDL_Texture *)aura_textures[i].sdl3_texture);
+void __destroy_textures(aura_context_t* ctx) {
+	for (uint32_t i = 0; i < ctx->num_textures; i++) {
+		SDL_DestroyTexture((SDL_Texture *)ctx->textures[i].sdl3_texture);
 	}
-	num_aura_textures = 0;
+	ctx->num_textures = 0;
 }
 
 aura_context_t aura_init(void *sdl3_window) {
@@ -31,7 +25,7 @@ aura_context_t aura_init(void *sdl3_window) {
 }
 
 void aura_deinit(aura_context_t *ctx) {
-	__destroy_textures();
+	__destroy_textures(ctx);
 	SDL_DestroyRenderer(ctx->sdl3_renderer);
 	*ctx = (aura_context_t){0};
 }
@@ -40,7 +34,7 @@ void aura_render(aura_context_t *ctx) {
 	aura_set_target(ctx, NULL);
 
 	SDL_RenderPresent(ctx->sdl3_renderer);
-	__destroy_textures();
+	__destroy_textures(ctx);
 }
 
 void aura_clip(aura_context_t *ctx, rectangle_t rectangle) {
@@ -89,13 +83,13 @@ void aura_rectangle(aura_context_t *ctx, rectangle_t rectangle, color_t color) {
 }
 
 aura_texture_t *aura_add_texture(aura_context_t *ctx, uint32_t width, uint32_t height, void *pixels) {
-	if (num_aura_textures + 1 > AURA_MAX_TEXTURES_PER_FRAME) {
+	if (ctx->num_textures + 1 > AURA_MAX_TEXTURES_PER_FRAME) {
 		ERROR("increase AURA_MAX_TEXTURES_PER_FRAME (%u)", AURA_MAX_TEXTURES_PER_FRAME);
 		return NULL;
 	}
 
-	aura_texture_t *tex = &aura_textures[num_aura_textures];
-	num_aura_textures++;
+	aura_texture_t *tex = &ctx->textures[ctx->num_textures];
+	ctx->num_textures++;
 
 	tex->width = width;
 	tex->height = height;
@@ -108,13 +102,13 @@ aura_texture_t *aura_add_texture(aura_context_t *ctx, uint32_t width, uint32_t h
 }
 
 aura_target_t *aura_add_target(aura_context_t *ctx, uint32_t width, uint32_t height) {
-	if (num_aura_textures + 1 > AURA_MAX_TEXTURES_PER_FRAME) {
+	if (ctx->num_textures + 1 > AURA_MAX_TEXTURES_PER_FRAME) {
 		ERROR("increase AURA_MAX_TEXTURES_PER_FRAME (%u)", AURA_MAX_TEXTURES_PER_FRAME);
 		return NULL;
 	}
 
-	aura_texture_t *tex = &aura_textures[num_aura_textures];
-	num_aura_textures++;
+	aura_texture_t *tex = &ctx->textures[ctx->num_textures];
+	ctx->num_textures++;
 
 	tex->width = width;
 	tex->height = height;
